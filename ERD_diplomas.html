@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ERD esquema diplomas — Diplomados CUN</title>
+  <style>
+    :root { color-scheme: light; }
+    body { font-family: Segoe UI, system-ui, sans-serif; margin: 24px; color: #1a1a1a; background: #fff; }
+    h1 { font-size: 22px; margin: 0 0 8px; }
+    h2 { font-size: 16px; margin: 28px 0 10px; }
+    p, li { font-size: 14px; line-height: 1.45; }
+    .meta { color: #444; margin-bottom: 20px; }
+    .note { border: 1px solid #ccc; padding: 12px 14px; margin: 16px 0; background: #f7f7f7; }
+    svg { max-width: 100%; height: auto; border: 1px solid #ddd; }
+    table { border-collapse: collapse; width: 100%; font-size: 13px; }
+    th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; vertical-align: top; }
+    th { background: #f0f0f0; }
+    .box { fill: #fff; stroke: #333; }
+    .box-fact { fill: #f3f3f3; stroke: #111; stroke-width: 1.6; }
+    .head { fill: #e8e8e8; stroke: #333; }
+    .pk { fill: #111; font-weight: 600; }
+    .fk { fill: #333; }
+    .col { fill: #333; }
+    .more { fill: #666; font-style: italic; }
+    @media print { .noprint { display: none; } body { margin: 12px; } }
+  </style>
+</head>
+<body>
+  <p class="noprint"><strong>Para pasar:</strong> Archivo → Imprimir → Guardar como PDF, o adjunta este HTML.</p>
+
+  <h1>ERD — esquema diplomas (Diplomados / Órdenes Financieras)</h1>
+  <p class="meta">
+    CUN · Fuente Excel "26e05 Diplomados - Reporte de Órdenes Financieras registradas y pagadas por
+    Periodo Académico" (420 órdenes, hoja "26e - Reporte de Ordenes Financ") ·
+    Esquema diplomas ya existía vacío en CORE; este pipeline solo agrega tablas dentro de él.<br />
+    Archivo: FLUJO/diplomados/01_diplomas_schema.sql · Fecha: 2 sep 2026
+  </p>
+
+  <div class="note">
+    <strong>Cómo se liga a CORE (solo lectura, sin FK físicas):</strong>
+    estudiante_ref → core.person, primero por <em>documento</em> (Doc_alum = core.person.document) y,
+    de respaldo, por nombre normalizado (a diferencia de Jurídico, este Excel sí trae documento del
+    estudiante) · En CORE no hay FK entre esquemas; el cruce es lógico, igual que en tickets y
+    legal_consulting. Ver 04a_verificar_match_core_person.sql.
+  </div>
+
+  <h2>Diagrama</h2>
+  <svg viewBox="0 0 860 1060" xmlns="http://www.w3.org/2000/svg" aria-label="ERD diplomas">
+    <!-- catálogos fila 1 -> orden_financiera -->
+    <line x1="114"  y1="128" x2="430" y2="640" stroke="#999" />
+    <line x1="314"  y1="128" x2="450" y2="640" stroke="#999" />
+    <line x1="514"  y1="128" x2="470" y2="640" stroke="#999" />
+    <line x1="714"  y1="128" x2="490" y2="640" stroke="#999" />
+    <!-- catálogos fila 2 -> orden_financiera -->
+    <line x1="114"  y1="288" x2="510" y2="640" stroke="#999" />
+    <line x1="314"  y1="288" x2="530" y2="640" stroke="#999" />
+    <line x1="514"  y1="288" x2="550" y2="640" stroke="#999" />
+    <line x1="714"  y1="288" x2="570" y2="640" stroke="#999" />
+    <!-- estudiante_ref -> orden_financiera -->
+    <line x1="214"  y1="580" x2="214" y2="640" stroke="#999" stroke-width="1.6" />
+
+    <!-- periodo_academico -->
+    <rect class="box" x="24" y="24" width="180" height="86" rx="3" />
+    <rect class="head" x="24" y="24" width="180" height="26" rx="3" />
+    <text x="32" y="42" font-size="12" font-weight="700">periodo_academico</text>
+    <text class="pk" x="32" y="64" font-size="11">PK id  smallserial</text>
+    <text class="col" x="32" y="82" font-size="11">codigo  varchar(20)  UQ</text>
+
+    <!-- diplomado -->
+    <rect class="box" x="224" y="24" width="180" height="86" rx="3" />
+    <rect class="head" x="224" y="24" width="180" height="26" rx="3" />
+    <text x="232" y="42" font-size="12" font-weight="700">diplomado</text>
+    <text class="pk" x="232" y="64" font-size="11">PK id  smallserial</text>
+    <text class="col" x="232" y="82" font-size="11">codigo UQ · nombre</text>
+
+    <!-- sede -->
+    <rect class="box" x="424" y="24" width="180" height="86" rx="3" />
+    <rect class="head" x="424" y="24" width="180" height="26" rx="3" />
+    <text x="432" y="42" font-size="12" font-weight="700">sede</text>
+    <text class="pk" x="432" y="64" font-size="11">PK id  smallserial</text>
+    <text class="col" x="432" y="82" font-size="11">codigo UQ · nombre</text>
+
+    <!-- seccional -->
+    <rect class="box" x="624" y="24" width="180" height="86" rx="3" />
+    <rect class="head" x="624" y="24" width="180" height="26" rx="3" />
+    <text x="632" y="42" font-size="12" font-weight="700">seccional</text>
+    <text class="pk" x="632" y="64" font-size="11">PK id  smallserial</text>
+    <text class="col" x="632" y="82" font-size="11">codigo UQ · nombre</text>
+
+    <!-- modalidad -->
+    <rect class="box" x="24" y="184" width="180" height="86" rx="3" />
+    <rect class="head" x="24" y="184" width="180" height="26" rx="3" />
+    <text x="32" y="202" font-size="12" font-weight="700">modalidad</text>
+    <text class="pk" x="32" y="224" font-size="11">PK id  smallserial</text>
+    <text class="col" x="32" y="242" font-size="11">codigo UQ · nombre</text>
+
+    <!-- jornada -->
+    <rect class="box" x="224" y="184" width="180" height="86" rx="3" />
+    <rect class="head" x="224" y="184" width="180" height="26" rx="3" />
+    <text x="232" y="202" font-size="12" font-weight="700">jornada</text>
+    <text class="pk" x="232" y="224" font-size="11">PK id  smallserial</text>
+    <text class="col" x="232" y="242" font-size="11">codigo UQ · nombre</text>
+
+    <!-- estado_pago -->
+    <rect class="box" x="424" y="184" width="180" height="86" rx="3" />
+    <rect class="head" x="424" y="184" width="180" height="26" rx="3" />
+    <text x="432" y="202" font-size="12" font-weight="700">estado_pago</text>
+    <text class="pk" x="432" y="224" font-size="11">PK id  smallserial</text>
+    <text class="col" x="432" y="242" font-size="11">nombre UQ (PAGO/NO PAGO)</text>
+
+    <!-- clasificacion_contable -->
+    <rect class="box" x="624" y="184" width="200" height="104" rx="3" />
+    <rect class="head" x="624" y="184" width="200" height="26" rx="3" />
+    <text x="632" y="202" font-size="12" font-weight="700">clasificacion_contable</text>
+    <text class="pk" x="632" y="224" font-size="11">PK id  smallserial</text>
+    <text class="col" x="632" y="242" font-size="11">fondo_codigo · fondo_nombre</text>
+    <text class="col" x="632" y="258" font-size="11">producto · fuente</text>
+    <text class="more" x="632" y="276" font-size="10">UQ (fondo_codigo, producto, fuente)</text>
+
+    <!-- estudiante_ref -->
+    <rect class="box" x="24" y="330" width="420" height="250" rx="3" />
+    <rect class="head" x="24" y="330" width="420" height="26" rx="3" />
+    <text x="32" y="348" font-size="12" font-weight="700">estudiante_ref  (puente lógico a core.person)</text>
+    <text class="pk" x="32" y="370" font-size="11">PK id  serial</text>
+    <text class="col" x="32" y="388" font-size="11">documento_origen  varchar(20)  UQ</text>
+    <text class="col" x="32" y="404" font-size="11">tipo_documento_origen · id_tercero_origen</text>
+    <text class="col" x="32" y="420" font-size="11">nombres · segundo_nombre · apellido1 · apellido2</text>
+    <text class="col" x="32" y="436" font-size="11">nombre_completo_normalizado · genero</text>
+    <text class="col" x="32" y="452" font-size="11">fecha_nacimiento · fecha_expedicion_documento</text>
+    <text class="col" x="32" y="468" font-size="11">email_institucional · email_personal</text>
+    <text class="col" x="32" y="484" font-size="11">telefono_casa · telefono_celular · direccion</text>
+    <text class="fk" x="32" y="504" font-size="11">core_person_id  →  core.person.id  (lógico, sin FK)</text>
+    <text class="col" x="32" y="522" font-size="11">match_status  (documento · nombre_normalizado ·</text>
+    <text class="col" x="32" y="536" font-size="11">pendiente · sin_match)  default 'pendiente'</text>
+    <text class="more" x="32" y="558" font-size="10">match primero por documento (fuerte); nombre como respaldo</text>
+
+    <!-- orden_financiera (hecho) -->
+    <rect class="box-fact" x="24" y="640" width="812" height="396" rx="3" />
+    <rect class="head" x="24" y="640" width="812" height="26" rx="3" />
+    <text x="32" y="658" font-size="12" font-weight="700">orden_financiera  (hecho — 1 fila = 1 orden financiera de matrícula)</text>
+
+    <text class="pk" x="32" y="682" font-size="11">PK id  serial</text>
+    <text class="col" x="32" y="698" font-size="11">orden_externa  bigint  UQ   (columna "Orden" del Excel)</text>
+
+    <text class="fk" x="32" y="720" font-size="11">FK estudiante_id  → estudiante_ref.id  (NOT NULL)</text>
+    <text class="fk" x="32" y="736" font-size="11">FK periodo_id  → periodo_academico.id  (NOT NULL)</text>
+    <text class="fk" x="32" y="752" font-size="11">FK diplomado_id  → diplomado.id  (NULLABLE: 1 fila sin dato, ver advertencias)</text>
+    <text class="fk" x="32" y="768" font-size="11">FK sede_id / seccional_id / modalidad_id / jornada_id  (NULLABLE, misma fila)</text>
+    <text class="fk" x="32" y="784" font-size="11">FK clasificacion_contable_id  → clasificacion_contable.id  (NOT NULL)</text>
+    <text class="fk" x="32" y="800" font-size="11">FK estado_pago_academico_id  → estado_pago.id  (NOT NULL)</text>
+    <text class="fk" x="32" y="816" font-size="11">FK estado_pago_financiero_id  → estado_pago.id  (NOT NULL)</text>
+
+    <text class="col" x="440" y="682" font-size="11">tipo_inscripcion (NUEVO/ANTIGUO)</text>
+    <text class="col" x="440" y="698" font-size="11">6 fechas: creacion_academica/financiera,</text>
+    <text class="col" x="440" y="714" font-size="11">pago_liquidacion, recibo, siguiente_pago, pago_anterior</text>
+    <text class="col" x="440" y="736" font-size="11">periodo_ultimo_pago_texto</text>
+    <text class="col" x="440" y="758" font-size="11">valor_orden  NOT NULL</text>
+    <text class="col" x="440" y="774" font-size="11">valor_liquidado · valor_pagado  (NULL si NO PAGO)</text>
+    <text class="col" x="440" y="790" font-size="11">+ 13 columnas monetarias más: pago_directo,</text>
+    <text class="col" x="440" y="806" font-size="11">saldo_favor, credito, icetex, contratos, becas_dtos,</text>
+    <text class="col" x="440" y="822" font-size="11">otras_ncr, nota_credito_anulacion, tarjeta_debito/</text>
+    <text class="col" x="440" y="838" font-size="11">credito, pago_banco, efectivo, place, 2x1  numeric(14,2)</text>
+
+    <text class="col" x="32" y="862" font-size="11">creditos_orden · referencia_liquidacion</text>
+    <text class="col" x="32" y="878" font-size="11">grupo_facturacion_codigo · descripcion_grupo_facturacion</text>
+    <text class="col" x="32" y="894" font-size="11">(informativos; grupo_facturacion NO es 1:1 con diplomado)</text>
+    <text class="col" x="32" y="916" font-size="11">ubicacion_texto · formulario_texto · numero_formulario</text>
+    <text class="col" x="32" y="932" font-size="11">creado_por_texto · actualizado_por_texto</text>
+    <text class="col" x="32" y="948" font-size="11">sistema_origen  (constante 'FECO' en este lote)</text>
+    <text class="col" x="32" y="964" font-size="11">created_at  timestamptz  default now()</text>
+
+    <text class="more" x="32" y="1010" font-size="10">Ver 01_diplomas_schema.sql para tipos exactos y comentarios de columna.</text>
+  </svg>
+
+  <h2>Notas de calidad de datos (lote 2 sep 2026, 420 filas)</h2>
+  <table>
+    <tr><th>Tema</th><th>Detalle</th></tr>
+    <tr>
+      <td>Orden 728897 sin diplomado</td>
+      <td>Llegó del Excel sin Cod_uni/Nom_unidad/Cod_sede/Cod_secc/Cod_moda/Id_jornada. Nomcencos y
+      Grupo_facturacion de esa fila se contradicen sobre cuál sería el diplomado real. Se cargó con
+      esos campos en NULL, sin adivinar el valor; queda en advertencias_calidad.csv.</td>
+    </tr>
+    <tr>
+      <td>Teléfonos con formato irregular</td>
+      <td>52 valores de Tel_casa/Tel_celular no tienen 10 dígitos (con prefijo de país "57" pegado,
+      basura como "1111111"/"0", o truncados). Se guardan tal cual como texto, marcados en
+      advertencias_calidad.csv; no se intenta "arreglar" el dato de origen.</td>
+    </tr>
+    <tr>
+      <td>Nomcencos vs Nom_unidad</td>
+      <td>4 de los 12 diplomados tienen el nombre en Nomcencos (centro de costos) levemente distinto
+      de Nom_unidad. Se usó Nom_unidad como nombre canónico del catálogo diplomado.</td>
+    </tr>
+    <tr>
+      <td>Grupo_facturacion no es catálogo confiable</td>
+      <td>13 grupos de facturación para 12 diplomados; 2 de esos grupos mezclan diplomados distintos
+      entre filas (incluye un grupo especial "Estudiantes Beca Diplomado 100%"). Se guarda como texto
+      informativo en orden_financiera, sin integridad referencial.</td>
+    </tr>
+    <tr>
+      <td>Documentos duplicados (2 casos)</td>
+      <td>2 estudiantes tienen 2 órdenes cada uno (2 diplomados distintos, o mismo diplomado repetido).
+      Es esperado: estudiante_ref es dimensión (1 fila/persona), orden_financiera es hecho (N filas/persona).</td>
+    </tr>
+  </table>
+</body>
+</html>

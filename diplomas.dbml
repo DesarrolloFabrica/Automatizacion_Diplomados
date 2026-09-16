@@ -1,0 +1,158 @@
+Project diplomas {
+  database_type: "PostgreSQL"
+  Note: "ERD local. Esquema diplomas YA EXISTE en CORE (vacío al momento de este pipeline). No ejecutar contra producción sin --permitir-prod."
+}
+
+Table diplomas.periodo_academico {
+  id smallserial [pk]
+  codigo varchar(20) [unique, not null, note: "valor crudo de 'Periodo', ej. 2600000"]
+}
+
+Table diplomas.diplomado {
+  id smallserial [pk]
+  codigo varchar(10) [unique, not null, note: "Cod_uni, ej. CE510"]
+  nombre varchar(200) [not null, note: "Nom_unidad (nombre canónico; Nomcencos difiere en 4/12 casos, no se usa)"]
+}
+
+Table diplomas.sede {
+  id smallserial [pk]
+  codigo integer [unique, not null]
+  nombre varchar(100) [not null]
+}
+
+Table diplomas.seccional {
+  id smallserial [pk]
+  codigo integer [unique, not null]
+  nombre varchar(100) [not null]
+}
+
+Table diplomas.modalidad {
+  id smallserial [pk]
+  codigo integer [unique, not null]
+  nombre varchar(60) [not null]
+}
+
+Table diplomas.jornada {
+  id smallserial [pk]
+  codigo integer [unique, not null]
+  nombre varchar(60) [not null]
+}
+
+Table diplomas.estado_pago {
+  id smallserial [pk]
+  nombre varchar(20) [unique, not null, note: "PAGO, NO PAGO — referenciado 2 veces desde orden_financiera (académico y financiero)"]
+}
+
+Table diplomas.clasificacion_contable {
+  id smallserial [pk]
+  fondo_codigo integer [not null]
+  fondo_nombre varchar(100) [not null]
+  producto varchar(120) [not null]
+  fuente varchar(120) [not null]
+  Note: "UNIQUE (fondo_codigo, producto, fuente). 1 sola combinación en el lote de origen; se cataloga por si un próximo extracto trae otra."
+}
+
+Table diplomas.estudiante_ref {
+  id serial [pk]
+  documento_origen varchar(20) [unique, not null, note: "Doc_alum"]
+  tipo_documento_origen varchar(10) [note: "Tip_identificacion crudo: C/PPT/E/T"]
+  id_tercero_origen integer [note: "Id_tercero del ERP origen; trazabilidad, no llave"]
+  nombres varchar(100)
+  segundo_nombre varchar(100)
+  apellido1 varchar(100)
+  apellido2 varchar(100)
+  nombre_completo_normalizado varchar(300) [not null, note: "fold: mayúsculas, sin tildes, para match por nombre"]
+  genero varchar(5)
+  fecha_nacimiento date
+  fecha_expedicion_documento date
+  email_institucional varchar(200)
+  email_personal varchar(200)
+  telefono_casa varchar(30)
+  telefono_celular varchar(30)
+  direccion varchar(250)
+  core_person_id integer [note: "lógico → core.person.id, por documento primero y nombre como respaldo. Sin FK."]
+  match_status varchar(20) [default: 'pendiente', note: "documento | nombre_normalizado | pendiente | sin_match"]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`, note: "se refresca en cada UPSERT; core_person_id/match_status NUNCA se pisan en el UPDATE"]
+}
+
+Table diplomas.orden_financiera {
+  id serial [pk]
+  orden_externa bigint [unique, not null, note: "columna Orden; PK natural del hecho en origen"]
+  estudiante_id integer [not null, ref: > diplomas.estudiante_ref.id]
+  periodo_id smallint [not null, ref: > diplomas.periodo_academico.id]
+  diplomado_id smallint [ref: > diplomas.diplomado.id, note: "NULL en 1 fila (orden 728897), ver advertencias_calidad.csv"]
+  sede_id smallint [ref: > diplomas.sede.id]
+  seccional_id smallint [ref: > diplomas.seccional.id]
+  modalidad_id smallint [ref: > diplomas.modalidad.id]
+  jornada_id smallint [ref: > diplomas.jornada.id]
+  clasificacion_contable_id smallint [not null, ref: > diplomas.clasificacion_contable.id]
+  estado_pago_academico_id smallint [not null, ref: > diplomas.estado_pago.id]
+  estado_pago_financiero_id smallint [not null, ref: > diplomas.estado_pago.id]
+  tipo_inscripcion varchar(20) [note: "NUEVO / ANTIGUO"]
+  fecha_creacion_academica date
+  fecha_creacion_financiera date
+  fecha_pago_liquidacion date
+  fecha_recibo date
+  fecha_siguiente_pago date
+  fecha_pago_anterior date
+  periodo_ultimo_pago_texto varchar(20)
+  valor_orden numeric(14,2) [not null]
+  valor_liquidado numeric(14,2) [note: "NULL si estado_pago_financiero = NO PAGO"]
+  valor_pagado numeric(14,2) [note: "NULL si estado_pago_financiero = NO PAGO"]
+  valor_pago_directo numeric(14,2)
+  saldo_favor numeric(14,2)
+  valor_credito numeric(14,2)
+  valor_icetex numeric(14,2)
+  valor_contratos numeric(14,2)
+  valor_becas_descuentos numeric(14,2)
+  valor_otras_notas_credito numeric(14,2)
+  valor_nota_credito_anulacion numeric(14,2)
+  valor_tarjeta_debito numeric(14,2)
+  valor_tarjeta_credito numeric(14,2)
+  valor_pago_banco numeric(14,2)
+  valor_efectivo numeric(14,2)
+  valor_place numeric(14,2)
+  valor_2x1 numeric(14,2)
+  creditos_orden smallint
+  referencia_liquidacion bigint
+  grupo_facturacion_codigo integer [note: "informativo; NO es 1:1 con diplomado en origen, sin catálogo"]
+  descripcion_grupo_facturacion varchar(200)
+  ubicacion_texto varchar(200)
+  formulario_texto text
+  numero_formulario integer
+  creado_por_texto varchar(200)
+  actualizado_por_texto varchar(200)
+  sistema_origen varchar(20) [note: "columna Documento; constante 'FECO' en este lote"]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`, note: "se refresca en cada UPSERT (ver 02/03_cargar_...sql, modo acumular)"]
+}
+
+Table diplomas.archivo_procesado {
+  id serial [pk]
+  drive_file_id varchar(100) [not null]
+  nombre_archivo varchar(300) [not null]
+  md5_checksum varchar(64)
+  procesado_en timestamptz [default: `now()`]
+  ordenes_en_archivo integer
+  advertencias_totales integer
+  advertencias_criticas integer
+  estado varchar(20) [not null, note: "cargado | bloqueado_criticas | error"]
+  detalle text
+  Note: "UNIQUE (drive_file_id, md5_checksum). Control técnico del robot (Fase 2) -- NO es dato de negocio, no se conecta con ninguna otra tabla a propósito."
+}
+
+Table diplomas.referencia_cruce_con_core {
+  periodo_academico varchar [note: "NO cruza -- catálogo propio, sin equivalente en CORE"]
+  diplomado varchar [note: "NO cruza -- catálogo propio, sin equivalente en CORE"]
+  sede varchar [note: "NO cruza -- catálogo propio, sin equivalente en CORE"]
+  seccional varchar [note: "NO cruza -- catálogo propio, sin equivalente en CORE"]
+  modalidad varchar [note: "NO cruza -- catálogo propio, sin equivalente en CORE"]
+  jornada varchar [note: "NO cruza -- catálogo propio, sin equivalente en CORE"]
+  estado_pago varchar [note: "NO cruza -- catálogo propio, sin equivalente en CORE"]
+  clasificacion_contable varchar [note: "NO cruza -- catálogo propio, sin equivalente en CORE"]
+  orden_financiera varchar [note: "NO cruza -- hecho propio, no existe en CORE"]
+  archivo_procesado varchar [note: "NO cruza -- control técnico del robot, no es dato de negocio"]
+  estudiante_ref varchar [note: "SÍ cruza (pendiente) -- 0 de 418 estudiantes cruzados hasta el 2 sep 2026, match_status='pendiente' en el 100%. Ver 04a_verificar_match_core_person.sql"]
+  Note: "TABLA DE REFERENCIA -- no existe físicamente en la base de datos. Es solo para mostrar en el diagrama qué SÍ y qué NO se cruza con CORE. Cada columna es una de las 11 tablas reales de este esquema; el 'note' de cada columna explica su estado de cruce (pasa el mouse encima para verlo)."
+}

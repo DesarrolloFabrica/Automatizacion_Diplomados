@@ -1,4 +1,4 @@
-# Documentación del proceso — Diplomados (Educación Continuada)
+﻿# Documentación del proceso — Diplomados (Educación Continuada)
 
 CUN · Fábrica de contenidos · sep 2026
 
@@ -6,7 +6,6 @@ Este documento describe el **workflow completo**: desde el Excel en Drive hasta 
 
 Relacionado:
 
-- `LEEME.txt` — guía del piloto local (Fase 1)
 - `automatizacion/DESPLIEGUE.md` — comandos GCP (Fase 2)
 - `CHECKLIST_ENTREGA.md` — validación de cierre
 - `DICCIONARIO_DATOS_EXCEL.md` — columnas del Excel

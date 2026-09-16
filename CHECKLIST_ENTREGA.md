@@ -1,4 +1,4 @@
-# Checklist de entrega — Diplomados
+﻿# Checklist de entrega — Diplomados
 
 Marcar antes de dar por cerrado un despliegue o una entrega del flujo.
 
@@ -6,7 +6,6 @@ Marcar antes de dar por cerrado un despliegue o una entrega del flujo.
 
 - [ ] Existe `DOCUMENTACION_PROCESO.md` (workflow + fases)
 - [ ] Existe `DICCIONARIO_DATOS_EXCEL.md`
-- [ ] Existe `LEEME.txt` (piloto local)
 - [ ] Existe `automatizacion/DESPLIEGUE.md` (GCP)
 - [ ] README del repo apunta a esos docs
 

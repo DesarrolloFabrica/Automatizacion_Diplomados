@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 # Automatización Diplomados
 
@@ -17,7 +17,6 @@
 ## Tabla de contenido
 
 - [Visión general](#-visión-general)
-- [Qué es (y qué no es)](#-qué-es-y-qué-no-es)
 - [Documentación](#-documentación)
 - [Uso rápido (local)](#-uso-rápido-local)
 - [Flujo continuo](#-flujo-continuo)
@@ -36,16 +35,6 @@ Pipeline de **Educación Continuada / Diplomados**: toma el Excel semanal de ór
 | **Fase 2** | GCP | Robot cada lunes ~9am (`sync_diplomados.py`) |
 
 Hoja Excel obligatoria: **`26e - Reporte de Ordenes Financ`**.
-
----
-
-## Qué es (y qué no es)
-
-| Esto sí | Esto no |
-|---------|---------|
-| Carga de diplomados / órdenes | Flujo LMS / Inventario |
-| Cruce estudiante → `core.person` | Informe `Pendientes_Cruce_CORE` |
-| Robot lunes Drive → BD | Consultorio Jurídico ([repo aparte](https://github.com/DesarrolloFabrica/Automatizacion_Juridico)) |
 
 ---
 
